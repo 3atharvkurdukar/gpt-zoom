@@ -11,6 +11,8 @@ export const SpeechSynthesisForm = ({}: {}) => {
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setError(null);
+    setAudioURL(null);
     try {
       const { data } = await axios.post(
         "/api/synthesize",

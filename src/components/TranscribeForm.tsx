@@ -1,4 +1,5 @@
 "use client";
+import axios from "axios";
 import React, { FormEventHandler, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -17,18 +18,18 @@ export const TranscribeForm = ({}: {}) => {
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setError(null);
+    setTranscription(null);
     const file = acceptedFiles[0];
 
     try {
-      const res = await fetch("/api/transcribe", {
-        method: "POST",
-        body: file,
+      const { data } = await axios.post("/api/transcribe", {
+        file,
         headers: {
           "Content-Type": "audio/*",
         },
       });
-      const data = await res.json();
-      setTranscription(data.transcription);
+      setTranscription(data?.transcription);
     } catch (error) {
       console.error(error);
       setError((error as Error).message);
