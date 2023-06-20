@@ -36,13 +36,15 @@ export default function Home() {
           height={100}
           className="flex-none"
         />
-        <Image
-          src="/plus.svg"
-          alt="plus"
-          width={48}
-          height={48}
-          className="flex-none"
-        />
+        <div className="w-12 h-12">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 448 512"
+            className="fill-gray-800 dark:fill-gray-100"
+          >
+            <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" />
+          </svg>
+        </div>
         <Image
           src="/chatgpt.png"
           alt="ChatGPT"
@@ -60,12 +62,12 @@ export default function Home() {
           name="meeting-link"
           type="url"
           required
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-slate-800 dark:text-gray-100 border-gray-100 dark:border-gray-700 text-xl focus:ring-1 ring-indigo-200 dark:ring-indigo-700"
           placeholder="Enter meeting link"
         />
         <button
           type="submit"
-          className="flex-none rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          className="flex-none rounded-md bg-indigo-700 px-5 py-2.5 font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 text-xl"
         >
           Join
         </button>

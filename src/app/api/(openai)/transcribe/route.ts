@@ -20,14 +20,12 @@ export async function POST(req: NextRequest) {
     // Call the OpenAI Whisper API for transcription
     const transcription = await transcribeAudio(tempFilePath).catch(
       (error: Error) => {
-        console.error(error.message);
+        console.error(error);
         throw new Error(error.message);
       }
     );
     // Delete the temporary file
     rmSync(path.dirname(tempFilePath), { recursive: true, force: true });
-    return NextResponse.json({ transcription });
-
     return NextResponse.json({ transcription });
   } catch (error) {
     console.error(error);
