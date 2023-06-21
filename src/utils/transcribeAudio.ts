@@ -10,7 +10,7 @@ const openai = new OpenAIApi(configuration);
 
 export const transcribeAudio = async (file: PathLike) => {
   const transcript = await openai.createTranscription(
-    createReadStream(file),
+    createReadStream(file) as any,
     "whisper-1"
   );
   return transcript.data.text;
