@@ -1,5 +1,7 @@
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatCompletionRequestMessage } from "openai";
+import { handleAxiosError } from "~/utils/handleAxiosError";
 import promptChatGPT from "~/utils/promptChatGPT";
 
 export async function POST(req: NextRequest) {
@@ -12,7 +14,11 @@ export async function POST(req: NextRequest) {
     const response = await promptChatGPT(messages);
     return NextResponse.json({ response });
   } catch (error) {
-    console.error(error);
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error);
+    } else {
+      console.error(error);
+    }
     return NextResponse.json(
       { error: "Something went wrong!" },
       { status: 500 }

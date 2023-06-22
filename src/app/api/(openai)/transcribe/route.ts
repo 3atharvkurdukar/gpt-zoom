@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import transcribeAudio from "~/utils/transcribeAudio";
 import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import path from "path";
+import axios from "axios";
+import { handleAxiosError } from "~/utils/handleAxiosError";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +30,11 @@ export async function POST(req: NextRequest) {
     rmSync(path.dirname(tempFilePath), { recursive: true, force: true });
     return NextResponse.json({ transcription });
   } catch (error) {
-    console.error(error);
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error);
+    } else {
+      console.error(error);
+    }
     return NextResponse.json(
       { error: "Something went wrong!" },
       { status: 500 }
