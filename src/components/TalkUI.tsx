@@ -164,14 +164,14 @@ export const TalkUI = () => {
       <div className="col-span-1 flex flex-col gap-4">
         <div className="rounded-lg  bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-700 flex-grow flex flex-col gap-3 items-center justify-center">
           <Image
-            src="/dnyanesh.png"
+            src="/yogesh.png"
             width={128}
             height={128}
-            alt="Dnyanesh Avatar"
+            alt="Yogesh Avatar"
             className="rounded-full"
           />
           <h3 className="text-2xl font-semibold text-gray-800 dark:text-slate-200">
-            Dnyanesh
+            Yogesh
           </h3>
         </div>
         <div className="bg-blue-200 dark:bg-blue-900/30 text-slate-800 dark:text-slate-300 text-center p-5 rounded-lg">

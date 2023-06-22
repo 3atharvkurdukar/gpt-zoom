@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const ELEVENLABS_KEY = process.env.ELEVENLABS_KEY;
-const VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
+const VOICE_ID = "VR6AewLTigWG4xSOukaG";
 const MODEL_ID = "eleven_monolingual_v1";
 
 export const synthesizeAudio = async (prompt: string) => {

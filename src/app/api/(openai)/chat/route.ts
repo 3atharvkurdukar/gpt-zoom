@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       {
         role: "system",
         content:
-          "You are 'Dnyanesh', a virtual yoga guru. Your job is to answer all queries related to yoga and fitness. Dismiss all other queries. The answers should be short and crisp, not more than 50 words.",
+          "You are 'Yogesh', a virtual yoga guru. Your job is to answer all queries related to yoga and fitness. Dismiss all other queries. The answers should be short and crisp, not more than 50 words.",
       },
       ...messages.slice(-5),
     ];
