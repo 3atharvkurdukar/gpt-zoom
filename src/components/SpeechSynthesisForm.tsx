@@ -17,7 +17,7 @@ export const SpeechSynthesisForm = ({}: {}) => {
       const { data } = await axios.post(
         "/api/synthesize",
         {
-          prompt: textPrompt,
+          text: textPrompt,
         },
         {
           responseType: "arraybuffer",
@@ -34,9 +34,6 @@ export const SpeechSynthesisForm = ({}: {}) => {
       const url = URL.createObjectURL(blob);
 
       // Set the audio URL state variable to the newly created URL
-      console.log(data);
-      console.log(blob);
-      console.log(url);
       setAudioURL(url);
     } catch (error) {
       console.error(error);

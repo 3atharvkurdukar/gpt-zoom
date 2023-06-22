@@ -22,11 +22,12 @@ export const TranscribeForm = ({}: {}) => {
     setTranscription(null);
     const file = acceptedFiles[0];
 
+    const formData = new FormData();
+    formData.append("audio", file);
     try {
-      const { data } = await axios.post("/api/transcribe", {
-        file,
+      const { data } = await axios.post("/api/transcribe", formData, {
         headers: {
-          "Content-Type": "audio/*",
+          "Content-Type": "multipart/form-data",
         },
       });
       setTranscription(data?.transcription);
