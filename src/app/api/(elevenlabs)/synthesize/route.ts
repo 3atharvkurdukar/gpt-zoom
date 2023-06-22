@@ -7,7 +7,10 @@ export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
     if (!text) {
-      return NextResponse.json({ error: "No text received!" }, { status: 400 });
+      return NextResponse.json(
+        { message: "No text received!" },
+        { status: 400 }
+      );
     }
 
     // Call the OpenAI Whisper API for transcription
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
       console.error(error);
     }
     return NextResponse.json(
-      { error: "The API has been rate limited. Try after some time" },
+      { message: "The API has been rate limited. Try after some time" },
       { status: 429 }
     );
   }

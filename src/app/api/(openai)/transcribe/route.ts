@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     if (!fileData) {
       return NextResponse.json(
-        { error: "No file data found!" },
+        { message: "No file data found!" },
         { status: 400 }
       );
     }
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       console.error(error);
     }
     return NextResponse.json(
-      { error: "Something went wrong!" },
+      { message: "Something went wrong!" },
       { status: 500 }
     );
   }

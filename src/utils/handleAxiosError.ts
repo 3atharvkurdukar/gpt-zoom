@@ -11,9 +11,9 @@ export const handleAxiosError = (error: AxiosError) => {
     // The error is a meaningful error.
     console.error("Request data:", error.response.request.body);
     console.error("Response data: ", error.response.data);
-    const { data } = error.response as { data: { error: string } };
-    const errorMessage = data.error;
-    return errorMessage;
+    const { data } = error.response as { data: { message: string } };
+    const errorMessage = data.message;
+    return !!errorMessage ? errorMessage : error.message;
   } else {
     // The error is not a meaningful error.
     console.error(error);

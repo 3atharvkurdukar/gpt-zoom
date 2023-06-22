@@ -1,10 +1,12 @@
 "use client";
 
-import axios, { Axios, AxiosError } from "axios";
+import axios, { type AxiosError } from "axios";
+import Image from "next/image";
 import { ChatCompletionRequestMessage } from "openai";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReactMediaRecorder } from "react-media-recorder";
 import { handleAxiosError } from "~/utils/handleAxiosError";
+import { ChatBubble } from "~/components/ChatBubble";
 
 const sendMimeType = "audio/wav";
 const receiveMimeType = "audio/mpeg";
@@ -17,17 +19,19 @@ export const TalkUI = () => {
     });
 
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [aiStatus, setAIStatus] = useState<
+    "Ready" | "Understanding" | "Thinking" | "Vocalising"
+  >("Ready");
 
   const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([
     {
-      role: "assistant",
-      content: "Hello, I am your AI assistant. How can I help you?",
+      role: "user",
+      content: "Introduce yourself.",
     },
   ]);
   const [aiResponseURL, setAIResponseURL] = useState<string | null>(null);
 
-  const getTranscription = useCallback(async (audioURL: string) => {
+  const getTranscription = async (audioURL: string) => {
     const audioBlob = await fetch(audioURL).then((r) => r.blob());
     const audioFile = new File([audioBlob], "audio.wav", {
       type: sendMimeType,
@@ -42,21 +46,18 @@ export const TalkUI = () => {
     const transcription = data.transcription as string;
     console.log("Transcription:", transcription);
     return transcription;
-  }, []);
+  };
 
-  const getAIResponse = useCallback(
-    async (messages: ChatCompletionRequestMessage[]) => {
-      const { data } = await axios.post("/api/chat", {
-        messages,
-      });
-      const response = data.response as ChatCompletionRequestMessage;
-      console.log("AI Response:", response);
-      return response;
-    },
-    []
-  );
+  const getAIResponse = async (messages: ChatCompletionRequestMessage[]) => {
+    const { data } = await axios.post("/api/chat", {
+      messages,
+    });
+    const response = data.response as ChatCompletionRequestMessage;
+    console.log("AI Response:", response);
+    return response;
+  };
 
-  const getAIVoice = useCallback(async (text: string) => {
+  const getAIVoice = async (text: string) => {
     const { data } = await axios.post(
       "/api/synthesize",
       {
@@ -77,11 +78,11 @@ export const TalkUI = () => {
     const url = URL.createObjectURL(blob);
     console.log("AI Voice:", url);
     return url;
-  }, []);
+  };
 
   useEffect(() => {
     if (mediaBlobUrl) {
-      setLoading(true);
+      setAIStatus("Understanding");
       setError(null);
       console.log("Generating transcription...");
       getTranscription(mediaBlobUrl)
@@ -106,7 +107,7 @@ export const TalkUI = () => {
           const errorMsg = handleAxiosError(error);
           setError(errorMsg);
         })
-        .finally(() => setLoading(false));
+        .finally(() => setAIStatus("Ready"));
     }
   }, [mediaBlobUrl]);
 
@@ -117,9 +118,9 @@ export const TalkUI = () => {
     console.log(messages);
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage.content) return;
-    if (lastMessage.role === "user") {
+    if (lastMessage.role === "user" || lastMessage.role === "system") {
       console.log("Generating AI response...");
-      setLoading(true);
+      setAIStatus("Thinking");
       getAIResponse(messages)
         .then((aiResponse) => {
           setMessages((messages) => [...messages, aiResponse]);
@@ -128,10 +129,10 @@ export const TalkUI = () => {
           const errorMsg = handleAxiosError(error);
           setError(errorMsg);
         })
-        .finally(() => setLoading(false));
+        .finally(() => setAIStatus("Ready"));
     } else if (lastMessage.role === "assistant") {
       console.log("Generating AI voice...");
-      setLoading(true);
+      setAIStatus("Vocalising");
       const lastMessage = messages[messages.length - 1];
       if (!lastMessage.content) return;
       getAIVoice(lastMessage.content)
@@ -140,57 +141,53 @@ export const TalkUI = () => {
           const errorMsg = handleAxiosError(error);
           setError(errorMsg);
         })
-        .finally(() => setLoading(false));
+        .finally(() => setAIStatus("Ready"));
     }
   }, [messages]);
 
-  useEffect(() => {
-    console.log(mediaBlobUrl);
-  }, [mediaBlobUrl]);
+  console.log(error);
 
   return (
-    <div className="w-full">
-      {loading && (
-        <div className="my-5 text-center bg-blue-100 text-blue-600 dark:text-gray-200 shadow-sm dark:bg-blue-900 p-2 rounded-lg">
-          <p className="font-bold text-lg">Processing...</p>
+    <div className="w-full h-[95vh] grid grid-cols-3 gap-4">
+      <div className="col-span-1 flex flex-col gap-4">
+        <div className="rounded-lg  bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-700 flex-grow flex flex-col gap-3 items-center justify-center">
+          <Image
+            src="/dnyanesh.png"
+            width={128}
+            height={128}
+            alt="Dnyanesh Avatar"
+            className="rounded-full"
+          />
+          <h3 className="text-2xl font-semibold text-gray-800 dark:text-slate-200">
+            Dnyanesh
+          </h3>
         </div>
-      )}
-      {error && (
-        <div className="my-5 text-center bg-red-200 text-red-600 dark:text-white shadow-sm dark:bg-red-700 p-2 rounded-lg">
-          <p className="font-bold text-lg">{error}</p>
+        <div className="bg-blue-200 dark:bg-blue-900/30 text-slate-800 dark:text-slate-300 text-center p-5 rounded-lg">
+          Recorder Status: <span className="uppercase font-bold">{status}</span>
         </div>
-      )}
-      <div className="flex justify-evenly">
-        <div className="w-48 h-48 rounded-full  bg-white dark:bg-slate-700 border-4 border-gray-300 dark:border-slate-600 flex items-center justify-center">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">
-            ChatGPT
-          </h2>
-        </div>
-        <div className="w-48 h-48 rounded-full  bg-white dark:bg-slate-700 border-4 border-gray-300 dark:border-slate-600 flex items-center justify-center">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">
-            User
-          </h2>
-        </div>
-      </div>
-      <div className="my-5 flex justify-center">
         <button
           onMouseDown={startRecording}
           onMouseUp={stopRecording}
-          className="rounded-lg px-3 py-2 transition-colors bg-indigo-700 text-white hover:bg-indigo-800 shadow"
+          className="text-xl uppercase font-bold block rounded-lg px-3 py-4 transition-colors bg-indigo-700 text-white hover:bg-indigo-800 shadow"
         >
           {status === "recording" ? "Stop Recording" : "Start Recording"}
         </button>
       </div>
-      {!!mediaBlobUrl && (
-        <div className="my-5 flex justify-center">
-          <audio controls src={mediaBlobUrl} />
+      <div className="col-span-2 flex flex-col flex-grow w-full bg-white dark:bg-slate-900 shadow-xl rounded-lg overflow-hidden p-4">
+        <div className="flex flex-col flex-grow h-0 overflow-auto">
+          {messages.map((message, i) => (
+            <ChatBubble key={i} role={message.role} message={message.content} />
+          ))}
+          {aiStatus !== "Ready" && (
+            <ChatBubble role="assistant" message={`${aiStatus}...`} />
+          )}
+          {error && <ChatBubble role="error" message={error} />}
         </div>
-      )}
-      {!!aiResponseURL && (
-        <div className="my-5 flex justify-center">
-          <audio autoPlay controls src={aiResponseURL} />
+        <div className="flex justify-between">
+          {!!mediaBlobUrl && <audio controls src={mediaBlobUrl} />}
+          {!!aiResponseURL && <audio controls autoPlay src={aiResponseURL} />}
         </div>
-      )}
+      </div>
     </div>
   );
 };
