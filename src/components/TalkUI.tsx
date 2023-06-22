@@ -4,7 +4,7 @@ import axios, { type AxiosError } from "axios";
 import Image from "next/image";
 import { ChatCompletionRequestMessage } from "openai";
 import { useEffect, useState } from "react";
-import { useReactMediaRecorder } from "react-media-recorder";
+import useMediaRecorder from "@wmik/use-media-recorder";
 import { handleAxiosError } from "~/utils/handleAxiosError";
 import { ChatBubble } from "~/components/ChatBubble";
 
@@ -12,17 +12,19 @@ const sendMimeType = "audio/wav";
 const receiveMimeType = "audio/mpeg";
 
 export const TalkUI = () => {
-  const { status, startRecording, stopRecording, mediaBlobUrl } =
-    useReactMediaRecorder({
-      audio: true,
-      askPermissionOnMount: true,
+  const { status, startRecording, stopRecording, mediaBlob, getMediaStream } =
+    useMediaRecorder({
+      mediaStreamConstraints: { audio: true },
+      blobOptions: { type: sendMimeType },
+
+      // askPermissionOnMount: true,
     });
 
   const [error, setError] = useState<string | null>(null);
   const [aiStatus, setAIStatus] = useState<
     "Ready" | "Understanding" | "Thinking" | "Vocalising"
   >("Ready");
-
+  const [mediaBlobUrl, setMediaBlobUrl] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([
     {
       role: "user",
@@ -31,8 +33,7 @@ export const TalkUI = () => {
   ]);
   const [aiResponseURL, setAIResponseURL] = useState<string | null>(null);
 
-  const getTranscription = async (audioURL: string) => {
-    const audioBlob = await fetch(audioURL).then((r) => r.blob());
+  const getTranscription = async (audioBlob: Blob) => {
     const audioFile = new File([audioBlob], "audio.wav", {
       type: sendMimeType,
     });
@@ -81,11 +82,22 @@ export const TalkUI = () => {
   };
 
   useEffect(() => {
-    if (mediaBlobUrl) {
+    if (mediaBlob) {
+      const url = URL.createObjectURL(mediaBlob);
+      setMediaBlobUrl(url);
+    }
+  }, [mediaBlob]);
+
+  useEffect(() => {
+    getMediaStream();
+  }, []);
+
+  useEffect(() => {
+    if (mediaBlob) {
       setAIStatus("Understanding");
       setError(null);
       console.log("Generating transcription...");
-      getTranscription(mediaBlobUrl)
+      getTranscription(mediaBlob)
         .then((transcription) => {
           if (transcription.length === 0) {
             setMessages((messages) => [
@@ -109,7 +121,7 @@ export const TalkUI = () => {
         })
         .finally(() => setAIStatus("Ready"));
     }
-  }, [mediaBlobUrl]);
+  }, [mediaBlob]);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -166,8 +178,8 @@ export const TalkUI = () => {
           Recorder Status: <span className="uppercase font-bold">{status}</span>
         </div>
         <button
-          onMouseDown={startRecording}
-          onMouseUp={stopRecording}
+          onMouseDown={() => startRecording()}
+          onMouseUp={() => stopRecording()}
           className="text-xl uppercase font-bold block rounded-lg px-3 py-4 transition-colors bg-indigo-700 text-white hover:bg-indigo-800 shadow"
         >
           {status === "recording" ? "Stop Recording" : "Start Recording"}
