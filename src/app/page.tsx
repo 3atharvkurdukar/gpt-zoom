@@ -27,11 +27,11 @@ const cards: CardInfo[] = [
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-16 gap-8">
       <div className="flex w-full mx-5 items-center justify-center gap-4">
         <Image
-          src="/zoom.png"
-          alt="Zoom"
+          src="/chatgpt.png"
+          alt="ChatGPT"
           width={100}
           height={100}
           className="flex-none"
@@ -46,8 +46,8 @@ export default function Home() {
           </svg>
         </div>
         <Image
-          src="/chatgpt.png"
-          alt="ChatGPT"
+          src="/audio.png"
+          alt="Audio"
           width={100}
           height={100}
           className="flex-none"
@@ -60,7 +60,7 @@ export default function Home() {
         Talk to ChatGPT
       </Link>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-3 lg:text-left gap-4">
+      <div className="grid text-center lg:mb-0 lg:grid-cols-3 lg:text-left gap-4">
         {cards.map((card) => (
           <Card key={card.title} {...card} />
         ))}
