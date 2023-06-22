@@ -53,25 +53,12 @@ export default function Home() {
           className="flex-none"
         />
       </div>
-      <div className="flex max-w-md gap-x-4">
-        <label htmlFor="meeting-link" className="sr-only">
-          Meeting Link
-        </label>
-        <input
-          id="meeting-link"
-          name="meeting-link"
-          type="url"
-          required
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-slate-800 dark:text-gray-100 border-gray-100 dark:border-gray-700 text-xl focus:ring-1 ring-indigo-200 dark:ring-indigo-700"
-          placeholder="Enter meeting link"
-        />
-        <button
-          type="submit"
-          className="flex-none rounded-md bg-indigo-700 px-5 py-2.5 font-semibold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 text-xl"
-        >
-          Join
-        </button>
-      </div>
+      <Link
+        href="/talk"
+        className="text-xl rounded-lg px-5 py-4 transition-colors bg-indigo-700 text-white hover:bg-indigo-800 shadow"
+      >
+        Talk to ChatGPT
+      </Link>
 
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-3 lg:text-left gap-4">
         {cards.map((card) => (
