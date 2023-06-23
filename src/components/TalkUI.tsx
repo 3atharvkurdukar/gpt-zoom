@@ -127,7 +127,6 @@ export const TalkUI = () => {
     if (messages.length === 0) {
       return;
     }
-    console.log(messages);
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage.content) return;
     if (lastMessage.role === "user" || lastMessage.role === "system") {
@@ -156,8 +155,6 @@ export const TalkUI = () => {
         .finally(() => setAIStatus("Ready"));
     }
   }, [messages]);
-
-  console.log(error);
 
   return (
     <div className="w-full h-[95vh] grid grid-cols-3 gap-4">
