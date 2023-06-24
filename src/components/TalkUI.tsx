@@ -188,7 +188,7 @@ export const TalkUI = () => {
             <ChatBubble key={i} role={message.role} message={message.content} />
           ))}
           {aiStatus !== "Ready" && (
-            <ChatBubble role="assistant" message={`${aiStatus}...`} />
+            <ChatBubble role="assistant" message={`${aiStatus}...`} loading />
           )}
           {error && <ChatBubble role="error" message={error} />}
         </div>
