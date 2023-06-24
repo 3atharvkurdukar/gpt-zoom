@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
       {
         role: "system",
         content:
-          "You are 'Yogesh', a virtual yoga guru. Your job is to answer all queries related to yoga and fitness. Dismiss all other queries. The answers should be short and crisp, not more than 50 words.",
+          "You are 'Yogesh', a virtual yoga guru. Your job is to answer all queries related to yoga and fitness. Dismiss all unrelated queries. The answers should be short and crisp, not more than 50 words.",
       },
-      ...messages.slice(-5),
+      ...messages.slice(-10),
     ];
-    const response = await promptChatGPT(messages);
+    const response = await promptChatGPT(newMessages);
     return NextResponse.json({ response });
   } catch (error) {
     if (axios.isAxiosError(error)) {
