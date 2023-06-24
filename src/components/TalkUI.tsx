@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import useMediaRecorder from "@wmik/use-media-recorder";
 import { handleAxiosError } from "~/utils/handleAxiosError";
 import { ChatBubble } from "~/components/ChatBubble";
+import { useChat } from "ai/react";
+import { Message } from "ai";
 
 const sendMimeType = "audio/wav";
 const receiveMimeType = "audio/mpeg";
@@ -16,21 +18,35 @@ export const TalkUI = () => {
     useMediaRecorder({
       mediaStreamConstraints: { audio: true },
       blobOptions: { type: sendMimeType },
-
-      // askPermissionOnMount: true,
     });
+
+  const { messages, isLoading, setMessages, append } = useChat({
+    body: {
+      theme: "yoga",
+    },
+    onResponse: () => {
+      setAIStatus("Ready");
+    },
+    onError: (error: Error) => {
+      setError(error.message);
+    },
+    onFinish: (message: Message) => {
+      setAIStatus("Vocalising");
+      getAIVoice(message.content)
+        .then((url) => setAIResponseURL(url))
+        .catch((error: AxiosError) => {
+          const errorMsg = handleAxiosError(error);
+          setError(errorMsg);
+        })
+        .finally(() => setAIStatus("Ready"));
+    },
+  });
 
   const [error, setError] = useState<string | null>(null);
   const [aiStatus, setAIStatus] = useState<
     "Ready" | "Understanding" | "Thinking" | "Vocalising"
   >("Ready");
   const [mediaBlobUrl, setMediaBlobUrl] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([
-    {
-      role: "user",
-      content: "Introduce yourself.",
-    },
-  ]);
   const [aiResponseURL, setAIResponseURL] = useState<string | null>(null);
 
   const getTranscription = async (audioBlob: Blob) => {
@@ -49,15 +65,6 @@ export const TalkUI = () => {
     return transcription;
   };
 
-  const getAIResponse = async (messages: ChatCompletionRequestMessage[]) => {
-    const { data } = await axios.post("/api/chat", {
-      messages,
-    });
-    const response = data.response as ChatCompletionRequestMessage;
-    console.log("AI Response:", response);
-    return response;
-  };
-
   const getAIVoice = async (text: string) => {
     const { data } = await axios.post(
       "/api/synthesize",
@@ -67,13 +74,13 @@ export const TalkUI = () => {
       {
         responseType: "arraybuffer",
         headers: {
-          Accept: "audio/mpeg",
+          Accept: receiveMimeType,
         },
       }
     );
     // Create a new Blob object from the audio data with MIME type 'audio/mpeg'
     const blob = new Blob([data], {
-      type: "audio/mpeg",
+      type: receiveMimeType,
     });
     // Create a URL for the blob object
     const url = URL.createObjectURL(blob);
@@ -90,6 +97,12 @@ export const TalkUI = () => {
 
   useEffect(() => {
     getMediaStream();
+    setAIStatus("Thinking");
+    void append({
+      id: Date.now().toString(),
+      role: "user",
+      content: "Introduce yourself.",
+    });
   }, []);
 
   useEffect(() => {
@@ -100,19 +113,14 @@ export const TalkUI = () => {
       getTranscription(mediaBlob)
         .then((transcription) => {
           if (transcription.length === 0) {
-            setMessages((messages) => [
-              ...messages,
-              {
-                role: "assistant",
-                content:
-                  "Sorry, I didn't get you. Could you please say it again?",
-              },
-            ]);
+            setError("Sorry, I didn't get you. Could you please say it again?");
           } else {
-            setMessages((messages) => [
-              ...messages,
-              { role: "user", content: transcription },
-            ]);
+            setAIStatus("Thinking");
+            void append({
+              id: Date.now().toString(),
+              role: "user",
+              content: transcription,
+            });
           }
         })
         .catch((error: AxiosError) => {
@@ -122,39 +130,6 @@ export const TalkUI = () => {
         .finally(() => setAIStatus("Ready"));
     }
   }, [mediaBlob]);
-
-  useEffect(() => {
-    if (messages.length === 0) {
-      return;
-    }
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage.content) return;
-    if (lastMessage.role === "user" || lastMessage.role === "system") {
-      console.log("Generating AI response...");
-      setAIStatus("Thinking");
-      getAIResponse(messages)
-        .then((aiResponse) => {
-          setMessages((messages) => [...messages, aiResponse]);
-        })
-        .catch((error: AxiosError) => {
-          const errorMsg = handleAxiosError(error);
-          setError(errorMsg);
-        })
-        .finally(() => setAIStatus("Ready"));
-    } else if (lastMessage.role === "assistant") {
-      console.log("Generating AI voice...");
-      setAIStatus("Vocalising");
-      const lastMessage = messages[messages.length - 1];
-      if (!lastMessage.content) return;
-      getAIVoice(lastMessage.content)
-        .then((url) => setAIResponseURL(url))
-        .catch((error: AxiosError) => {
-          const errorMsg = handleAxiosError(error);
-          setError(errorMsg);
-        })
-        .finally(() => setAIStatus("Ready"));
-    }
-  }, [messages]);
 
   return (
     <div className="w-full h-[95vh] grid grid-cols-3 gap-4">

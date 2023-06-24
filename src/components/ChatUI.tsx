@@ -1,44 +1,19 @@
 "use client";
 
-import axios from "axios";
-import { ChatCompletionRequestMessage } from "openai";
-import { KeyboardEventHandler, useEffect, useState } from "react";
 import ChatBubble from "~/components/ChatBubble";
+import { useChat } from "ai/react";
 
 export const ChatUI = () => {
-  const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([
-    { role: "assistant", content: "Hello, how can I help you?" },
-  ]);
-  const [messageInput, setMessageInput] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (messages.length === 0) return;
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role === "user") {
-      setLoading(true);
-      axios
-        .post("/api/chat", {
-          messages: messages,
-        })
-        .then((res) => {
-          const { response } = res.data;
-          console.log(response);
-          setMessages((messages) => [...messages, response]);
-          setLoading(false);
-        });
-    }
-  }, [messages]);
-
-  const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
-    if (event.key === "Enter" && !loading) {
-      setMessages((messages) => [
-        ...messages,
-        { role: "user", content: messageInput },
-      ]);
-      setMessageInput("");
-    }
-  };
+  const { messages, input, isLoading, error, handleInputChange, handleSubmit } =
+    useChat({
+      initialMessages: [
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Hello, how can I help you?",
+        },
+      ],
+    });
 
   return (
     <div className="flex flex-col flex-grow w-full bg-white dark:bg-slate-900 shadow-xl rounded-lg overflow-hidden">
@@ -46,19 +21,44 @@ export const ChatUI = () => {
         {messages.map((message, i) => (
           <ChatBubble key={i} role={message.role} message={message.content} />
         ))}
-        {loading && <ChatBubble role="assistant" message="Typing..." />}
+        {isLoading && (
+          <ChatBubble role="assistant" message="Thinking..." loading />
+        )}
+        {error && <ChatBubble role="error" message={error.message} />}
       </div>
 
-      <div className="bg-gray-300 dark:bg-slate-800 p-4">
+      <form
+        className="bg-gray-300 dark:bg-slate-800 p-4 flex items-center gap-3"
+        onSubmit={handleSubmit}
+      >
         <input
-          className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-slate-900 dark:text-gray-100 border-gray-100 dark:border-slate-700 text-sn focus:ring-1 ring-indigo-200 dark:ring-indigo-700"
+          className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-slate-900 dark:text-gray-100 border-gray-100 dark:border-slate-700 text-sn focus:ring-1 ring-indigo-200 dark:ring-indigo-700 flex-grow"
           type="text"
           placeholder="Type your message…"
-          value={messageInput}
-          onChange={(event) => setMessageInput(event.target.value)}
-          onKeyDown={handleKeyDown}
+          value={input}
+          onChange={handleInputChange}
         />
-      </div>
+        <button
+          type="submit"
+          className="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded"
+          disabled={isLoading}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 rotate-90"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
+          </svg>
+        </button>
+      </form>
     </div>
   );
 };
